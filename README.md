@@ -66,3 +66,5 @@ As [Here](https://doc.riot-os.org/group__boards__atmega328p.html) is explained:
 > (Replace usbtiny with the ISP programmer you are using. The -B 32 might be needed on some ISP programmers to communicate with slow ATmega MCUs. It will not be needed anymore after the clock device has been disabled.)
 This "board" is configured to use 8MHz as core clock, so that the ATmega328p runs at the highest frequency possible without external clock sources.
 By setting the environment variable ATMEGA328P_CLOCK to a custom frequency in Hz (e.g. 1000000 for 1MHz), this core clock can be changed easily. Refer to the datasheet on how to configure the ATmega328p to use an external crystal, an external clock source or the clock divider.
+<p align="right">
+<img src="https://komarev.com/ghpvc/?username=blessedrebus&style=plastic&label=Views"><img>
