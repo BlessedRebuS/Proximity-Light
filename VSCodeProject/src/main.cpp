@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <FastLED.h>
 
 //--------------------------------------
 //-----CONFIGURATION PARAMETERS---------
@@ -9,11 +8,10 @@
 
 //--------------------------------------
 //-----ARDUINO PIN----------------------
-const int trigPin = 9;          //default D9
-const int echoPin = 8;          //default D8
-const int relayPin = 7;         //default D7
+const int trigPin = 9;  //default D9
+const int echoPin = 8;  //default D8
+const int relayPin = 7; //default D7
 //--------------------------------------
-
 
 //--------------------------------------
 //------------FUNCTIONS-----------------
@@ -72,7 +70,8 @@ void setup()
   Serial.begin(9600);
 }
 
-void loop(){
+void loop()
+{
 
   int distance = getDistance();
 

@@ -1,47 +1,38 @@
 #include <Arduino.h>
 
-#define TRIG_DISTANCE 17
+//--------------------------------------
+//-----CONFIGURATION PARAMETERS---------
+#define TRIG_DISTANCE 17 // cm
+#define SWITCH_DELAY 800 // ms
+//--------------------------------------
 
-const int relayPin1 = 7;
-const int relayPin2 = 8;
+//--------------------------------------
+//-----ARDUINO PIN----------------------
+const int trigPin = 9;  //default D9
+const int echoPin = 8;  //default D8
+const int relayPin = 7; //default D7
+//--------------------------------------
 
-const int trigPin = 5;
-const int echoPin = 6;
+//--------------------------------------
+//------------FUNCTIONS-----------------
+bool status = false;
 
-const int buttonPin = 3;
-
-bool status1 = false;
-bool status2 = false;
-
-byte mode = 0;
-
-void switchStatus1(bool status) {
-  if (!status) {
-    digitalWrite(relayPin1, LOW);
-    status1 = false;
-  } else {
-    digitalWrite(relayPin1, HIGH);
-    status1 = true;
+void switchStatus()
+{
+  if (status)
+  {
+    digitalWrite(relayPin, LOW);
+    status = false;
+  }
+  else
+  {
+    digitalWrite(relayPin, HIGH);
+    status = true;
   }
 }
 
-void switchStatus2(bool status) {
-  if (!status) {
-    digitalWrite(relayPin2, LOW);
-    status2 = false;
-  } else {
-    digitalWrite(relayPin2, HIGH);
-    status2 = true;
-  }
-}
-
-void switchMode() {
-  mode = ++mode % 3;
-}
-
-//roba sensore ultrasuoni
-
-int getDistance() {
+int getDistance()
+{
   // Clears the trigPin condition
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -53,6 +44,7 @@ int getDistance() {
   unsigned long duration = pulseIn(echoPin, HIGH);
   // Calculating the distance
   int distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  // Displays the distance on the Serial Monitor
   Serial.print("Distance: ");
   Serial.print(distance);
   Serial.println(" cm");
@@ -60,51 +52,33 @@ int getDistance() {
   return distance;
 }
 
-bool checkDistance(int distance) {
-
-  if (distance <= TRIG_DISTANCE) return true;
-
+bool checkDistance(int distance)
+{
+  if (distance <= TRIG_DISTANCE)
+    return true;
   return false;
 }
 
-void setup() {
-
-  pinMode(relayPin1, OUTPUT);
-  pinMode(relayPin2, OUTPUT);
+void setup()
+{
+  pinMode(relayPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(trigPin, OUTPUT);
 
-  pinMode(buttonPin, INPUT_PULLUP);
-
-  digitalWrite(relayPin1, LOW);
-  digitalWrite(relayPin2, LOW);
-
-  attachInterrupt(digitalPinToInterrupt(buttonPin), switchMode, RISING);
+  digitalWrite(relayPin, LOW);
 
   Serial.begin(9600);
 }
 
-void loop() {
+void loop()
+{
 
   int distance = getDistance();
 
-  if (checkDistance(distance)) {
-    switch (mode) {
-    case 0:
-      switchStatus1(true);
-      switchStatus2(true);
-      break;
-    case 1:
-      switchStatus1(true);
-      switchStatus2(false);
-      break;
-    case 2:
-      switchStatus1(false);
-      switchStatus2(true);
-      break;
-    }
-
-    delay(800);
+  if (checkDistance(distance))
+  {
+    switchStatus();
+    delay(SWITCH_DELAY);
   }
 
   delay(5);
