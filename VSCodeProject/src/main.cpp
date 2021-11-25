@@ -1,13 +1,40 @@
 #include <Arduino.h>
 
+
 //--------------------------------------
 //-----CONFIGURATION PARAMETERS---------
 #define TRIG_DISTANCE 17 // cm
 #define SWITCH_DELAY 800 // ms
-#define CHECK_PER_SECOND 20
 
-#define DEBUG_MODE false // If 'true' enables Serial communication for better debugging
+#define DEBUG_MODE false    // If 'true' enables Serial communication for better debugging
 //--------------------------------------
+
+
+//--------------------------------------
+//--------LIGHTS CONFIGURATION----------
+#include <FastLED.h>
+#define LIGHTS_ON false   // Enables lights, set to true or false
+
+#define DATA_PIN    3
+//#define CLK_PIN   4
+#define LED_TYPE    WS2812B
+#define COLOR_ORDER GRB
+#define NUM_LEDS    64
+CRGB leds[NUM_LEDS];
+uint8_t gHue;
+#define FRAMES_PER_SECOND 60
+#define BRIGHTNESS  80
+
+void rainbow() 
+{
+  gHue++;
+  fill_rainbow( leds, NUM_LEDS, gHue, 7);
+  FastLED.show();
+
+  FastLED.delay(1000/FRAMES_PER_SECOND);
+}
+//--------------------------------------
+
 
 //--------------------------------------
 //-----ARDUINO PIN----------------------
@@ -59,8 +86,6 @@ void switchMode()
   mode = ++mode % 3;
 }
 
-//roba sensore ultrasuoni
-
 int getDistance()
 {
   // Clears the trigPin condition
@@ -109,6 +134,13 @@ void setup()
 
   attachInterrupt(digitalPinToInterrupt(buttonPin), switchMode, RISING);
 
+  // Lights setup
+  if(LIGHTS_ON){
+    FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+    FastLED.setBrightness(BRIGHTNESS);
+    gHue=0;
+  }
+
   if (DEBUG_MODE)
     Serial.begin(9600);
 }
@@ -138,5 +170,5 @@ void loop()
     delay(SWITCH_DELAY);
   }
 
-  delay(1000 / CHECK_PER_SECOND);
+  if(LIGHTS_ON)rainbow();
 }
