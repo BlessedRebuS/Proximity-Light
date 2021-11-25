@@ -4,32 +4,62 @@
 //-----CONFIGURATION PARAMETERS---------
 #define TRIG_DISTANCE 17 // cm
 #define SWITCH_DELAY 800 // ms
+#define CHECK_PER_SECOND 20
+
+#define DEBUG_MODE false // If 'true' enables Serial communication for better debugging
 //--------------------------------------
 
 //--------------------------------------
 //-----ARDUINO PIN----------------------
-const int trigPin = 9;  //default D9
-const int echoPin = 8;  //default D8
-const int relayPin = 7; //default D7
+const int trigPin = 5; //default D5
+const int echoPin = 6; //default D6
+
+const int buttonPin = 3; //default D3
+const int relayPin1 = 7; //default D7
+const int relayPin2 = 8; //default D8
 //--------------------------------------
 
 //--------------------------------------
 //------------FUNCTIONS-----------------
-bool status = false;
+bool status1 = false;
+bool status2 = false;
+int distance;
 
-void switchStatus()
+byte mode = 0;
+void switchStatus1(bool status)
 {
-  if (status)
+  if (!status)
   {
-    digitalWrite(relayPin, LOW);
-    status = false;
+    digitalWrite(relayPin1, LOW);
+    status1 = false;
   }
   else
   {
-    digitalWrite(relayPin, HIGH);
-    status = true;
+    digitalWrite(relayPin1, HIGH);
+    status1 = true;
   }
 }
+
+void switchStatus2(bool status)
+{
+  if (!status)
+  {
+    digitalWrite(relayPin2, LOW);
+    status2 = false;
+  }
+  else
+  {
+    digitalWrite(relayPin2, HIGH);
+    status2 = true;
+  }
+}
+
+void switchMode()
+{
+  mode = ++mode % 3;
+}
+
+//roba sensore ultrasuoni
 
 int getDistance()
 {
@@ -44,42 +74,69 @@ int getDistance()
   unsigned long duration = pulseIn(echoPin, HIGH);
   // Calculating the distance
   int distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
-  // Displays the distance on the Serial Monitor
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.println(" cm");
+
+  if (DEBUG_MODE)
+  {
+    Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.println(" cm");
+  }
 
   return distance;
 }
 
 bool checkDistance(int distance)
 {
+
   if (distance <= TRIG_DISTANCE)
     return true;
+
   return false;
 }
 
 void setup()
 {
-  pinMode(relayPin, OUTPUT);
+
+  pinMode(relayPin1, OUTPUT);
+  pinMode(relayPin2, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(trigPin, OUTPUT);
 
-  digitalWrite(relayPin, LOW);
+  pinMode(buttonPin, INPUT_PULLUP);
 
-  Serial.begin(9600);
+  digitalWrite(relayPin1, LOW);
+  digitalWrite(relayPin2, LOW);
+
+  attachInterrupt(digitalPinToInterrupt(buttonPin), switchMode, RISING);
+
+  if (DEBUG_MODE)
+    Serial.begin(9600);
 }
 
 void loop()
 {
-
-  int distance = getDistance();
+  distance = getDistance();
 
   if (checkDistance(distance))
   {
-    switchStatus();
+    switch (mode)
+    {
+    case 0:
+      switchStatus1(true);
+      switchStatus2(true);
+      break;
+    case 1:
+      switchStatus1(true);
+      switchStatus2(false);
+      break;
+    case 2:
+      switchStatus1(false);
+      switchStatus2(true);
+      break;
+    }
+
     delay(SWITCH_DELAY);
   }
 
-  delay(5);
+  delay(1000 / CHECK_PER_SECOND);
 }
