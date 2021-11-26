@@ -5,7 +5,7 @@
 #define TRIG_DISTANCE 17 // cm
 #define SWITCH_DELAY 800 // ms
 
-#define DEBUG_MODE false // If 'true' enables Serial communication for better debugging
+#define DEBUG_MODE true // If 'true' enables Serial communication for better debugging
 //--------------------------------------
 
 //--------------------------------------
@@ -51,26 +51,16 @@ int distance;
 byte mode = 0;
 void switchStatus1(bool value)
 {
-  if (!value)
-  {
-    digitalWrite(relayPin1, LOW);
-  }
-  else
-  {
+  if (value)
     digitalWrite(relayPin1, HIGH);
-  }
+  else digitalWrite(relayPin1, LOW);
 }
 
 void switchStatus2(bool value)
 {
-  if (!value)
-  {
-    digitalWrite(relayPin2, LOW);
-  }
-  else
-  {
+  if (value)
     digitalWrite(relayPin2, HIGH);
-  }
+  else digitalWrite(relayPin2, LOW);
 }
 
 int getDistance()
@@ -99,10 +89,8 @@ int getDistance()
 
 bool checkDistance(int distance)
 {
-
   if (distance <= TRIG_DISTANCE)
     return true;
-
   return false;
 }
 
@@ -110,6 +98,15 @@ void switchMode()
 {
   mode = ++mode % 3;
 
+  if (DEBUG_MODE)
+  {
+    Serial.print("Mode: ");
+    Serial.println(mode);
+  }
+}
+
+void checkMode()
+{
   switch (mode)
   {
   case 0:
@@ -126,16 +123,13 @@ void switchMode()
     break;
   }
 
-  if(DEBUG_MODE){
-    Serial.print("Mode: ");
-    Serial.println(mode);
-  }
+  delay(5);
 }
 
 void turnOff()
 {
-  switchStatus1(false);
-  switchStatus2(false);
+  digitalWrite(relayPin1,LOW);
+  digitalWrite(relayPin2,LOW);
 }
 
 void setup()
@@ -147,9 +141,6 @@ void setup()
   pinMode(trigPin, OUTPUT);
 
   pinMode(buttonPin, INPUT_PULLUP);
-
-  digitalWrite(relayPin1, LOW);
-  digitalWrite(relayPin2, LOW);
 
   attachInterrupt(digitalPinToInterrupt(buttonPin), switchMode, RISING);
 
@@ -166,6 +157,7 @@ void setup()
 
   mode = 0;
   status = false;
+  turnOff();
 }
 
 void loop()
@@ -177,14 +169,18 @@ void loop()
     if (status)
     {
       turnOff();
-      status=false;
+      status = false;
     }
-    else{
-      switchMode();
-      status=true;
+    else
+    {
+      checkMode();
+      status = true;
     }
     delay(SWITCH_DELAY);
   }
+
+  if (status)
+    checkMode();
 
   if (LIGHTS_ON)
     rainbow();
