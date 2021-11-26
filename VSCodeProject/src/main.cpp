@@ -1,40 +1,37 @@
 #include <Arduino.h>
 
-
 //--------------------------------------
 //-----CONFIGURATION PARAMETERS---------
 #define TRIG_DISTANCE 17 // cm
 #define SWITCH_DELAY 800 // ms
 
-#define DEBUG_MODE false    // If 'true' enables Serial communication for better debugging
+#define DEBUG_MODE false // If 'true' enables Serial communication for better debugging
 //--------------------------------------
-
 
 //--------------------------------------
 //--------LIGHTS CONFIGURATION----------
 #include <FastLED.h>
-#define LIGHTS_ON false   // Enables lights, set to true or false
+#define LIGHTS_ON false // Enables lights, set to true or false
 
-#define DATA_PIN    3
+#define DATA_PIN 4
 //#define CLK_PIN   4
-#define LED_TYPE    WS2812B
+#define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
-#define NUM_LEDS    64
+#define NUM_LEDS 64
 CRGB leds[NUM_LEDS];
 uint8_t gHue;
 #define FRAMES_PER_SECOND 60
-#define BRIGHTNESS  80
+#define BRIGHTNESS 80
 
-void rainbow() 
+void rainbow()
 {
   gHue++;
-  fill_rainbow( leds, NUM_LEDS, gHue, 7);
+  fill_rainbow(leds, NUM_LEDS, gHue, 7);
   FastLED.show();
 
-  FastLED.delay(1000/FRAMES_PER_SECOND);
+  FastLED.delay(1000 / FRAMES_PER_SECOND);
 }
 //--------------------------------------
-
 
 //--------------------------------------
 //-----ARDUINO PIN----------------------
@@ -48,42 +45,32 @@ const int relayPin2 = 8; //default D8
 
 //--------------------------------------
 //------------FUNCTIONS-----------------
-bool status1 = false;
-bool status2 = false;
+bool status;
 int distance;
 
 byte mode = 0;
-void switchStatus1(bool status)
+void switchStatus1(bool value)
 {
-  if (!status)
+  if (!value)
   {
     digitalWrite(relayPin1, LOW);
-    status1 = false;
   }
   else
   {
     digitalWrite(relayPin1, HIGH);
-    status1 = true;
   }
 }
 
-void switchStatus2(bool status)
+void switchStatus2(bool value)
 {
-  if (!status)
+  if (!value)
   {
     digitalWrite(relayPin2, LOW);
-    status2 = false;
   }
   else
   {
     digitalWrite(relayPin2, HIGH);
-    status2 = true;
   }
-}
-
-void switchMode()
-{
-  mode = ++mode % 3;
 }
 
 int getDistance()
@@ -119,6 +106,33 @@ bool checkDistance(int distance)
   return false;
 }
 
+void switchMode()
+{
+  mode = ++mode % 3;
+
+  switch (mode)
+  {
+  case 0:
+    switchStatus1(true);
+    switchStatus2(true);
+    break;
+  case 1:
+    switchStatus1(true);
+    switchStatus2(false);
+    break;
+  case 2:
+    switchStatus1(false);
+    switchStatus2(true);
+    break;
+  }
+}
+
+void turnOff()
+{
+  switchStatus1(false);
+  switchStatus2(false);
+}
+
 void setup()
 {
 
@@ -135,14 +149,18 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(buttonPin), switchMode, RISING);
 
   // Lights setup
-  if(LIGHTS_ON){
-    FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  if (LIGHTS_ON)
+  {
+    FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(BRIGHTNESS);
-    gHue=0;
+    gHue = 0;
   }
 
   if (DEBUG_MODE)
     Serial.begin(9600);
+
+  mode = 0;
+  status = false;
 }
 
 void loop()
@@ -151,24 +169,18 @@ void loop()
 
   if (checkDistance(distance))
   {
-    switch (mode)
+    if (status)
     {
-    case 0:
-      switchStatus1(true);
-      switchStatus2(true);
-      break;
-    case 1:
-      switchStatus1(true);
-      switchStatus2(false);
-      break;
-    case 2:
-      switchStatus1(false);
-      switchStatus2(true);
-      break;
+      turnOff();
+      status=false;
     }
-
+    else{
+      switchMode();
+      status=true;
+    }
     delay(SWITCH_DELAY);
   }
 
-  if(LIGHTS_ON)rainbow();
+  if (LIGHTS_ON)
+    rainbow();
 }
