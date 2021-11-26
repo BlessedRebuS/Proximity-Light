@@ -125,6 +125,11 @@ void switchMode()
     switchStatus2(true);
     break;
   }
+
+  if(DEBUG_MODE){
+    Serial.print("Mode: ");
+    Serial.println(mode);
+  }
 }
 
 void turnOff()
