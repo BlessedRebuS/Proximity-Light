@@ -54,7 +54,6 @@ Designed and rendered in Fusion360
 ATMega328p is a very versatile processor, mounted on Arduino, that can be used also separately with a different pinout. In this case the base clock 8MHZ is replaced with the 16MHZ clock (not necessary) connected to the two grounded capacitors to generate the oscillation.
 
 **How to program it?** I suggest to use the [USBASP programmer](www.learningaboutelectronics.com/Articles/Program-AVR-chip-using-a-USBASP-with-10-pin-cable.php) (6 or 10 PIN), but you can use an Arduino using "Arduino as ISP" programming.
-You
 
 ## The clock
 As [Here](https://doc.riot-os.org/group__boards__atmega328p.html) is explained:
