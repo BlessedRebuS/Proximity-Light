@@ -18,7 +18,7 @@ The project idea is to put two led strips in the pair of pins near the supply th
 ## Electronic Board
 Created with Autodesk EAGLE and Fusion360 Electronic.
 
-To connect all pins we simply used autorouting, commit to suggest changes.
+To connect all pins we simply used autorouting.
 
 ![alt text](https://github.com/BlessedRebuS/Proximity-Light/blob/main/images/Board.png)
 
